@@ -53,6 +53,7 @@ const Home = () => {
 
   const getData = () => {
     fetch('/api/gateway').then(res => res.json()).then(res => {
+      console.log(res.data)
       if (res.data){
         setData(res.data)
       }

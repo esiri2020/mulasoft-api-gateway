@@ -44,6 +44,8 @@ function Gateway({getData}) {
   return (
     <section className=''>
       <form className='justify-centre rounded-sm border-black border-2 py-2 px-5 mb-2 w-full' onSubmit={onSubmit}>
+      <h3 className="text-red-700"><b>Add Gateway</b></h3>
+
         <div className=''>
 
           <input
