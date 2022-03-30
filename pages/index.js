@@ -5,23 +5,45 @@ import Gateway from '../pages/gateway'
 import { useState, useEffect } from 'react'
 
 const Home = () => {
-
+  // formData stores the state of the add Peripheral_Devices form
   const [formData, setFormData] = useState({
     gateway: '',
     status: false,
     vendor: '',
   })
+  // data stores the list of gateway devices
   const [data, setData] = useState([])
+  // error serves as an error state flag as well as a store for the
+  // error message string to be displayed to the user
   const [error, setError] = useState('')
+  // call getData whenever this page is loaded into the DOM
   useEffect(() => {getData()}, [])
   const { gateway, status, vendor } = formData
-  console.log(gateway);
-
+  // Utility function for handling form changes
   const handleChange = (e) => {
     setFormData(() => ({ ...formData, [e.target.name]: e.target.value, }))
   }
-
-  const onSubmit = (e) => {
+  // function to fetch the gateway data from the backend
+  const getData = () => {
+    fetch('/api/gateway').then(res => res.json()).then(res => {
+      // check if response from backend contains the gateway data
+      if (res.data){
+        // store gateway data in stateful variable data
+        setData(res.data)
+      }
+      // else handle error
+      else {
+        setError('An error occurred')
+        alert('An error occurred')
+      }
+    }).catch(err => {
+      console.error(err);
+      setError('A connection error occurred')
+      alert('An unexpected error occurred')
+    })
+  }
+  // Function to add a Peripheral_Device to a gateway
+  const addDevice = (e) => {
     e.preventDefault()
     if(gateway==''){
       alert('Please select a gateway')
@@ -36,7 +58,7 @@ const Home = () => {
       body: JSON.stringify({...formData, option: 'addDevice'})
     }).then(response => response.json()).then(res => {
       if(!res.status){
-        alert('An error occured')
+        alert('An error occurred')
       }
       else if(res.status && res.status==200){
         console.log(res)
@@ -47,24 +69,10 @@ const Home = () => {
       }
     }).catch(err => {
       console.error(err);
-      alert('An error occured')
+      alert('An error occurred')
     })
   }
-
-  const getData = () => {
-    fetch('/api/gateway').then(res => res.json()).then(res => {
-      console.log(res.data)
-      if (res.data){
-        setData(res.data)
-      }
-      else {
-        alert('An error occured')
-      }
-    }).catch(err => {
-      console.error(err);
-      alert('An error occured')
-    })
-  }
+// Function to remove a Peripheral_Device from a gateway
   const removeDevice = UID => {
     fetch(`/api/gateway/${gateway}`, {
       method: 'POST',
@@ -75,7 +83,7 @@ const Home = () => {
       body: JSON.stringify({UID: UID, option: 'removeDevice'})
     }).then(response => response.json()).then(res => {
       if(!res.status){
-        alert('An error occured')
+        alert('An error occurred')
       }
       else if(res.status && res.status==200){
         console.log(res)
@@ -86,7 +94,7 @@ const Home = () => {
       }
     }).catch(err => {
       console.error(err);
-      alert('An error occured')
+      alert('An error occurred')
     })
   }
   return (
@@ -103,7 +111,7 @@ const Home = () => {
           <div className= 'mr-10'>
             <Gateway getData={getData}/>
 
-              <form className='justify-centre rounded-sm border-black border-2 py-2 px-5 mb-2 w-full' onSubmit={onSubmit}>
+              <form className='justify-centre rounded-sm border-black border-2 py-2 px-5 mb-2 w-full' onSubmit={addDevice}>
 
                 <div className="">
                   <select className='rounded-sm border-black border-2 mb-3 border-solid w-full px-1' name='gateway' value={gateway} onChange={handleChange} >
@@ -176,7 +184,9 @@ const Home = () => {
                )) : ''
              }
               </div>
-            ))): (
+            ))): error ? (
+              <p>{error}</p>
+            ) : (
               <p>Loading...</p>
             )}
           </div>
